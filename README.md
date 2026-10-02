@@ -70,3 +70,6 @@ If a cave file contains an error, a warning shows what is wrong and where.
 | M | sound on/off |
 | F11 | full screen |
 
+---
+
+![GAME](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME_02.png)
