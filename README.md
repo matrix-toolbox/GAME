@@ -6,6 +6,8 @@ I have no name for it yet, so for now the game is simply called **GAME**.
 
 I will not go into detail about the aim of the game. Those who have played the three games above will guess it immediately. Everyone else, please have fun finding out for yourself! :)  Hint: the RGB stones can be not only pushed but also kicked (fire + direction) so a kicked stone slides until something stops it. When properly combined, they form a firefly!
 
+![GAME](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME.png)
+
 To build it, one needs a C compiler and the SDL2 development files (`sudo apt install build-essential libsdl2-dev`) then `make` and `./GAME`.
 
 ## History
