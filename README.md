@@ -1,14 +1,22 @@
-# GAME: Boulder Dash without gravity, merged with Sokoban and The Power
+# GAME: Boulder Dash without gravity, merged with Sokoban, The Power and Robbo
 
-Rockford in a cave where nothing falls, with three sliding stones (red, green and blue) and Sokoban-style targets for boxes.
+Rockford/Robbo in a cave where nothing falls, with three sliding stones (red, green and blue) and Sokoban-style targets for boxes.
 
 I have no name for it yet, so for now the game is simply called **GAME**.
 
-I will not go into detail about the aim of the game. Those who have played the three games above will guess it immediately. Everyone else, please have fun finding out for yourself! :)  Hint: the RGB stones can be not only pushed but also kicked (fire + direction) so a kicked stone slides until something stops it. When properly combined, they form a firefly!
+I will not go into detail about the aim of the game. Those who have played the four games above will guess it immediately. Everyone else, please have fun finding out for yourself! :)  Hint: the RGB stones can be not only pushed but also kicked (fire + direction) so a kicked stone slides until something stops it. When properly combined, they form a firefly!
 
 ![GAME](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME.png)
 
-To build it, one needs a C compiler and the SDL2 development files (`sudo apt install build-essential libsdl2-dev`) then `make` and `./GAME`.
+To build it, one needs a C compiler and the SDL2 development files (`sudo apt install build-essential libsdl2-dev`) then `make` and `./GAME`. On Windows, in the MSYS2 MINGW64 shell: `pacman -S make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2` then `make`, which gives `GAME.EXE`. Also, `make ROBBO=1` builds it with the [Robbo look](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME_03.png).
+
+Making m$w under Linux:
+
+```sh
+sudo apt install gcc-mingw-w64-x86-64
+cd ~ && wget https://github.com/libsdl-org/SDL/releases/download/release-2.32.10/SDL2-devel-2.32.10-mingw.tar.gz && tar xzf SDL2-devel-2.32.10-mingw.tar.gz
+make WIN=1 # in the GAME folder (make WIN=1 ROBBO=1 for the Robbo look)
+```
 
 ## History
 
@@ -17,7 +25,7 @@ I had been planning to write such a game for &approx;20 years but never found th
 My first encounter with Boulder Dash was around 1988, then in 1991 I played The Power and later I discovered Sokoban. Each of these games has its own distinctive features and marks a milestone in gaming history. Ever since, I have wanted a game that combines their most original ideas. At first I meant to write it purely in `x86` assembly. The first attempts were made in 2020, but the project was never finished (instead, I focused on some [disassembly projects](https://github.com/matrix-toolbox/x86)). Recently, in the era of LLMs, it turned out that the right prompts were enough and within a few hours the entire project was ready. All I provided was my plan, preliminary graphics, instructions and a general vision of how it should be designed.
 
 Credits go to Claude (Claude Opus 5.5 by Anthropic, working in Claude Code), which in October 2026 wrote all the code from my plan, rules, graphics and instructions: the engine, the random cave generator with its solvability checks, the drawing and the sounds. The concept, the rules, the graphics and the caves are mine (Claude drew only the explosion frames). Further credits:
-- **Inspiration:** Boulder Dash (Peter Liepa and Chris Gray, First Star Software, 1984), The Power (1991) and Sokoban (Hiroyuki Imabayashi, Thinking Rabbit, 1982). This game is not affiliated with or endorsed by their rights holders. Boulder Dash is a trademark of its owner.
+- **Inspiration:** Boulder Dash (Peter Liepa and Chris Gray, First Star Software, 1984), The Power (1991), Sokoban (Hiroyuki Imabayashi, Thinking Rabbit, 1982) and Robbo (Janusz Pelc, LK Avalon, 1989). This game is not affiliated with or endorsed by their rights holders. Boulder Dash is a trademark of its owner.
 - **Sound:** the POKEY simulation comes from my earlier project BD_DREAM (UNRELEASED). The sound effects are based on Boulder Dash's: they are generated the way the Atari game generates them (on a simulated POKEY chip), but changed.
 - **Font:** font8x8_basic by Daniel Hepper, based on Marcel Sondaar's font8x8 (public domain).
 
