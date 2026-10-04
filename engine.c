@@ -479,7 +479,7 @@ void game_frame(Game *g, int dir, int fire)
         if (dir >= 0) g->facing = dir;
         if (dir == LEFT) g->facing_left = 1;
         if (dir == RIGHT) g->facing_left = 0;
-    } else if (g->phase != PH_BONUS) g->walking = 0;
+    } else g->walking = 0;
     if ((g->frame & 1) == 0) {
         g->blink = rnd(g) % 4 == 0;
         if (rnd(g) % 16 == 0) g->tap ^= 1;
