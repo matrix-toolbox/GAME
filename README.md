@@ -6,9 +6,15 @@ I have no name for it yet, so for now the game is simply called **GAME**.
 
 I will not go into detail about the aim of the game. Those who have played the four games above will guess it immediately. Everyone else, please have fun finding out for yourself! :)  Hint: the RGB stones can be not only pushed but also kicked (fire + direction) so a kicked stone slides until something stops it. When properly combined, they form a firefly!
 
-![GAME](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME.png)
+![GAME](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME_02.png)
 
-To build it, one needs a C compiler and the SDL2 development files (`sudo apt install build-essential libsdl2-dev`) then `make` and `./GAME`. On Windows, in the MSYS2 MINGW64 shell: `pacman -S make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2` then `make`, which gives `GAME.EXE`. Also, `make ROBBO=1` builds it with the [Robbo look](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME_03.png).
+<!-- ![GAME](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME.png) -->
+
+To build it, one needs a C compiler and the SDL2 development files (`sudo apt install build-essential libsdl2-dev`) then `make` and `./GAME`. On Windows, in the MSYS2 MINGW64 shell: `pacman -S make mingw-w64-x86_64-gcc mingw-w64-x86_64-SDL2` then `make`, which gives `GAME.EXE`. Also, `make ROBBO=1` builds it with the [Robbo look](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME_03.png):
+
+![C01 run](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/C01_RUN.webp)
+
+---
 
 Making m$w under Linux:
 
@@ -80,5 +86,3 @@ If a cave file contains an error, a warning shows what is wrong and where.
 | `F11` | full screen |
 
 ---
-
-![GAME](https://raw.githubusercontent.com/matrix-toolbox/GAME/main/GAME_02.png)
