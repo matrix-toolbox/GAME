@@ -21,6 +21,8 @@ static uint8_t *past;
 static int past_n, past_cap;
 unsigned game_luck;
 
+static void camera(Game *g);
+
 static unsigned rnd(Game *g)
 {
     g->rnd = g->rnd * 1103515245u + 12345u;
@@ -73,8 +75,8 @@ static void start_cave(Game *g)
     g->exit_x = g->exit_y = g->exit_frame = -1;
     g->walking = g->facing_left = 0;
     g->facing = RIGHT;
-    g->scroll_x = g->scroll_y = 1;
     g->cam_x = -1;
+    camera(g);
     g->latch_dir = -1;
     g->latch_fire = g->tap_fire = 0;
     g->rnd = g->rnd * 2654435761u + game_luck + 1;
@@ -401,7 +403,11 @@ static void camera(Game *g)
     int wx = px - SCREEN_W / 2, wy = py - vh / 2, mx = CW * CELL - SCREEN_W, my = CH * CELL - vh;
     wx = wx < 0 ? 0 : wx > mx ? mx : wx;
     wy = wy < 0 ? 0 : wy > my ? my : wy;
-    if (g->cam_x < 0) { g->cam_x = wx; g->cam_y = wy; return; }
+    if (g->cam_x < 0) {
+        g->cam_x = (wx + CELL / 2) / CELL * CELL, g->cam_y = (wy + CELL / 2) / CELL * CELL;
+        g->scroll_x = g->scroll_y = 0;
+        return;
+    }
     if (px - g->cam_x < 5 * CELL || px - g->cam_x > SCREEN_W - 5 * CELL) g->scroll_x = 1;
     if (py - g->cam_y < 3 * CELL || py - g->cam_y > vh - 3 * CELL) g->scroll_y = 1;
     if (g->scroll_x) {
