@@ -1,6 +1,6 @@
 # 2026-10-03
 diamonds         99
-time             500 # 300
+time             300
 amoeba_time      60
 amoeba_limit     200
 colors           $C4 $46 $4C $04 $00
