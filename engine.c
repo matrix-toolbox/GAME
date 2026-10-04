@@ -20,6 +20,7 @@ static const int DX[4] = {0, 1, 0, -1}, DY[4] = {-1, 0, 1, 0};
 static uint8_t *past;
 static int past_n, past_cap;
 unsigned game_luck;
+int time_off;
 
 static void camera(Game *g);
 
@@ -509,7 +510,7 @@ void game_frame(Game *g, int dir, int fire)
         camera(g);
         return;
     case PH_BONUS:
-        if (g->time_left > 0) {
+        if (g->time_left > 0 && !time_off) {
             sound_time(--g->time_left);
             points(g, 1);
             sound_play(SND_BONUS);
@@ -530,8 +531,8 @@ void game_frame(Game *g, int dir, int fire)
         if (++g->second_frames >= FPS) {
             g->second_frames = 0;
             g->played_seconds++;
-            if (g->time_left > 0) sound_time(--g->time_left);
-            if (g->time_left == 0) explode(g, g->rx, g->ry);
+            if (!time_off && g->time_left > 0) sound_time(--g->time_left);
+            if (!time_off && g->time_left == 0) explode(g, g->rx, g->ry);
         }
         break;
     }

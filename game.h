@@ -61,6 +61,7 @@ extern const char *cave_dir;
 extern int cave_count;
 extern const char *cave_single;
 extern unsigned game_luck;
+extern int time_off;
 void cave_count_files(void);
 void cave_path(int n, char *path, int size);
 void cave_random(Cave *c, unsigned seed);

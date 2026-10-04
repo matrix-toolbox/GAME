@@ -357,8 +357,10 @@ void draw(const Game *g, uint32_t *fb)
     } else {
         int left = g->cave.diamonds - g->collected;
         left = left < 0 ? 0 : left > 99 ? 99 : left;
-        snprintf(text, sizeof text, "%02d %02d %02d %04d %04ld %d", left, g->loose_boulders % 100,
-                 g->targets_left % 100, g->time_left % 10000, g->score % 10000, g->lives);
+        char clock[8] = "****";
+        if (!time_off) snprintf(clock, sizeof clock, "%04d", g->time_left % 10000);
+        snprintf(text, sizeof text, "%02d %02d %02d %s %04ld %d", left, g->loose_boulders % 100,
+                 g->targets_left % 100, clock, g->score % 10000, g->lives);
         line(fb, text, "11 11 11");
     }
 }

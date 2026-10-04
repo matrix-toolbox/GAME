@@ -16,8 +16,9 @@ static long frame_no, max_frames = -1;
 static SDL_Window *win;
 static SDL_Renderer *ren;
 static SDL_Texture *tex;
-static FILE *wav;
+static FILE *wav, *rec;
 static long wav_samples;
+static unsigned pending_seed;
 
 static void wav_header(void)
 {
@@ -34,7 +35,10 @@ static void wav_header(void)
 
 static unsigned random_seed(void)
 {
-    return 1 + (unsigned)(time(NULL) ^ (time(NULL) >> 7)) % 9999;
+    unsigned s = pending_seed ? pending_seed : 1 + (unsigned)(time(NULL) ^ (time(NULL) >> 7)) % 9999;
+    pending_seed = 0;
+    if (rec) fprintf(rec, "%ld seed %u\n", frame_no, s);
+    return s;
 }
 
 static int direction(void)
@@ -78,6 +82,7 @@ static void key(SDL_Keycode k, int down)
     case SDLK_F2: game_new(&game, cave_count ? 1 : 0, random_seed()); break;
     case SDLK_F3: game_new(&game, 0, random_seed()); break;
     case SDLK_m: sound_on ^= 1; break;
+    case SDLK_t: time_off ^= 1; break;
     case SDLK_F11:
         if (win) SDL_SetWindowFullscreen(win, (SDL_GetWindowFlags(win) & SDL_WINDOW_FULLSCREEN_DESKTOP) ? 0 : SDL_WINDOW_FULLSCREEN_DESKTOP);
         break;
@@ -99,12 +104,19 @@ static void script_next(void)
     }
 }
 
+static const struct { const char *name; SDL_Keycode k; } K[] = {
+    {"up", SDLK_UP}, {"down", SDLK_DOWN}, {"left", SDLK_LEFT}, {"right", SDLK_RIGHT}, {"fire", SDLK_LCTRL}, {"fire", SDLK_RCTRL},
+    {"z", SDLK_z}, {"space", SDLK_SPACE}, {"esc", SDLK_ESCAPE}, {"f2", SDLK_F2}, {"f3", SDLK_F3}, {"m", SDLK_m}, {"t", SDLK_t},
+};
+
+static void record(SDL_Keycode k, int down)
+{
+    for (unsigned i = 0; rec && i < sizeof K / sizeof K[0]; i++)
+        if (K[i].k == k) { fprintf(rec, "%ld %s %s\n", frame_no, down ? "down" : "up", K[i].name); return; }
+}
+
 static SDL_Keycode key_by_name(const char *n)
 {
-    static const struct { const char *name; SDL_Keycode k; } K[] = {
-        {"up", SDLK_UP}, {"down", SDLK_DOWN}, {"left", SDLK_LEFT}, {"right", SDLK_RIGHT}, {"fire", SDLK_LCTRL}, {"z", SDLK_z},
-        {"space", SDLK_SPACE}, {"esc", SDLK_ESCAPE}, {"f2", SDLK_F2}, {"f3", SDLK_F3},
-    };
     for (unsigned i = 0; i < sizeof K / sizeof K[0]; i++)
         if (!strcmp(n, K[i].name)) return K[i].k;
     fprintf(stderr, "script: no key '%s'\n", n);
@@ -138,6 +150,7 @@ static void run_script(void)
         else if (!strcmp(script_cmd, "dump")) cave_dump(&game, script_arg);
         else if (!strcmp(script_cmd, "map")) save_map(script_arg);
         else if (!strcmp(script_cmd, "quit")) quit_req = 1;
+        else if (!strcmp(script_cmd, "seed")) pending_seed = (unsigned)strtoul(script_arg, NULL, 10);
         script_next();
     }
 }
@@ -153,11 +166,12 @@ static void usage(void)
            "  --scale N        window scale (default 3)\n"
            "  --fullscreen     start full screen (F11 toggles)\n"
            "  --nosound        no sound\n"
+           "  --record FILE    save the keys pressed and the luck: --script FILE plays it again\n"
            "keys: arrows = move, Control = fire, Z = back in time (held), Space = pause,\n"
            "      Esc = give the cave up (a life;"
  " after GAME OVER: quit), F2 = a new game (C01),\n"
            "      F3 = a new game in a random cave,"
- " M = sound, F11 = full screen;\n"
+ " M = sound, T = time on/off, F11 = full screen;\n"
            "      the menu (a game's first cave): left/right, fire\n"
            "testing: --headless --frames N --script FILE --shot FILE.bmp --map FILE.bmp (the whole cave)\n"
            "         --wav FILE.wav (the sound)\n");
@@ -191,6 +205,7 @@ int main(int argc, char **argv)
         else if (!strcmp(a, "--headless")) headless = 1;
         else if (!strcmp(a, "--frames") && v) max_frames = atol(argv[++i]);
         else if (!strcmp(a, "--script") && v) script = fopen(argv[++i], "r");
+        else if (!strcmp(a, "--record") && v) { rec = fopen(argv[++i], "w"); if (!rec) { perror(argv[i]); return 1; } }
         else if (!strcmp(a, "--shot") && v) shot = argv[++i];
         else if (!strcmp(a, "--map") && v) map = argv[++i];
         else if (!strcmp(a, "--wav") && v) { wav = fopen(argv[++i], "wb"); if (wav) wav_header(); }
@@ -211,8 +226,14 @@ int main(int argc, char **argv)
     else fprintf(stderr, "caves: %d in %s%s\n", cave_count, cave_dir, cave_count ? "" : " - random caves only");
     if (start < 1 || start > cave_count) start = 1;
     if (!headless) game_luck = (unsigned)time(NULL) * 2654435761u ^ (unsigned)clock();
-    game_new(&game, cave_count && !seed ? start : 0, seed ? seed : random_seed());
     script_next();
+    while (script_frame == 0 && (!strcmp(script_cmd, "luck") || !strcmp(script_cmd, "seed"))) {
+        if (script_cmd[0] == 'l') game_luck = (unsigned)strtoul(script_arg, NULL, 10);
+        else pending_seed = (unsigned)strtoul(script_arg, NULL, 10);
+        script_next();
+    }
+    if (rec) fprintf(rec, "0 luck %u\n", game_luck);
+    game_new(&game, cave_count && !seed ? start : 0, seed ? seed : random_seed());
 
     if (!headless) {
         if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
@@ -233,7 +254,10 @@ int main(int argc, char **argv)
             SDL_Event e;
             while (SDL_PollEvent(&e)) {
                 if (e.type == SDL_QUIT) quit_req = 1;
-                else if ((e.type == SDL_KEYDOWN && !e.key.repeat) || e.type == SDL_KEYUP) key(e.key.keysym.sym, e.type == SDL_KEYDOWN);
+                else if ((e.type == SDL_KEYDOWN && !e.key.repeat) || e.type == SDL_KEYUP) {
+                    key(e.key.keysym.sym, e.type == SDL_KEYDOWN);
+                    record(e.key.keysym.sym, e.type == SDL_KEYDOWN);
+                }
             }
         }
         run_script();
@@ -268,6 +292,7 @@ int main(int argc, char **argv)
     if (shot) save_shot(shot);
     if (map) save_map(map);
     if (wav) { wav_header(); fclose(wav); }
+    if (rec) { fprintf(rec, "%ld quit\n", frame_no > 0 ? frame_no - 1 : 0); fclose(rec); }
     if (!headless) SDL_Quit();
     return 0;
 }
