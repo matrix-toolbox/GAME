@@ -28,9 +28,15 @@ int sprites_load(const char *path)
     for (int i = 0; i < SHEET_W * SHEET_H; i++) sheet[i] &= 0xFFFFFFu;
     own_colours = ok && sheet[11 * CELL] != CLEAR;
     if (ok) {
-        int seen[CELL][CELL] = {{0}}, best = -1;
-        double best_d = 1e9;
+        int seen[CELL][CELL] = {{0}}, count = 0;
+        double best_d = 1e9, comp_d[CELL * CELL + 1], cx = 0, cy = 0;
         memset(target_core, 0, sizeof target_core);
+        for (int y = 0; y < CELL; y++)
+            for (int x = 0; x < CELL; x++) {
+                uint32_t c = sheet[y * SHEET_W + 6 * CELL + x];
+                if (c != CLEAR && c != 0) cx += x, cy += y, count++;
+            }
+        if (count) cx /= count, cy /= count;
         for (int y0 = 0; y0 < CELL; y0++)
             for (int x0 = 0; x0 < CELL; x0++) {
                 uint32_t c = sheet[y0 * SHEET_W + 6 * CELL + x0];
@@ -41,7 +47,7 @@ int sprites_load(const char *path)
                 while (n) {
                     n--;
                     int x = stack[n][0], y = stack[n][1];
-                    double dd = (x - 8.5) * (x - 8.5) + (y - 8.5) * (y - 8.5);
+                    double dd = sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
                     if (dd < d) d = dd;
                     static const int D[4][2] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
                     for (int k = 0; k < 4; k++) {
@@ -52,10 +58,11 @@ int sprites_load(const char *path)
                         seen[ny][nx] = id, stack[n][0] = nx, stack[n][1] = ny, n++;
                     }
                 }
-                if (d < best_d) best_d = d, best = id;
+                comp_d[id] = d;
+                if (d < best_d) best_d = d;
             }
         for (int y = 0; y < CELL; y++)
-            for (int x = 0; x < CELL; x++) target_core[y][x] = best > 0 && seen[y][x] == best;
+            for (int x = 0; x < CELL; x++) target_core[y][x] = seen[y][x] && comp_d[seen[y][x]] <= best_d + 1;
     }
     for (int k = 0; ok && k < 3; k++) {
         double sum[3] = {0}; int n = 0;
@@ -94,6 +101,12 @@ static uint32_t tint(uint32_t c, uint32_t own, uint32_t to)
 static uint32_t brighter(uint32_t c)
 {
     int r = (int)(c >> 16) * 3 / 2, g = (int)(c >> 8 & 255) * 3 / 2, b = (int)(c & 255) * 3 / 2;
+    return (uint32_t)((r > 255 ? 255 : r) << 16 | (g > 255 ? 255 : g) << 8 | (b > 255 ? 255 : b));
+}
+
+static uint32_t scaled(uint32_t c, double f)
+{
+    int r = (int)((c >> 16) * f), g = (int)((c >> 8 & 255) * f), b = (int)((c & 255) * f);
     return (uint32_t)((r > 255 ? 255 : r) << 16 | (g > 255 ? 255 : g) << 8 | (b > 255 ? 255 : b));
 }
 
@@ -154,8 +167,8 @@ static int sprite(const Game *g, int e, int aux, int x, int y)
     case DIAMOND: return 15 + (aux ? aux - 1 : (x * 7 + y * 3) % 3);
     case FIREFLY: return 36 + k;
     case AMOEBA: return 0;
-    case EXIT: return g->exit_open && flash ? 5 : 3;
-    case INBOX: return aux ? 48 + aux - 1 : flash ? 5 : 3;
+    case EXIT: return 5;
+    case INBOX: return aux ? 48 + aux - 1 : flash ? 5 : 0;
     case EXPLOSION: {
         int st = blast_stage(aux);
         return st < 0 ? 0 : 48 + st;
@@ -178,6 +191,7 @@ static void put_cell(const Game *g, uint32_t *fb, int fw, int top, int bottom, i
     int blink = covered && hash((unsigned)x, (unsigned)y, (unsigned)g->frame / 8) % 9 == 0;
     int target = g->cave.target[y][x] && !covered && e != FIREFLY;
     int boxed = target && e == BOULDER, core_on = (g->frame / 10) % 2 == 0;
+    double pulse = 1 + 0.2 * sin(g->frame * 2 * 3.14159265 / 90);
     int piece[3][3] = {{0}};
     if (e == AMOEBA && !covered)
         for (int by = 0; by < 3; by++)
@@ -195,6 +209,7 @@ static void put_cell(const Game *g, uint32_t *fb, int fw, int top, int bottom, i
         sat = sat < 0 ? 0 : sat > 1 ? 1 : sat;
     }
     int rgb = !covered && (IS_STONE(e) || e == FIREFLY || e == DIAMOND);
+    int dim = e == EXIT && !covered && !(g->exit_open && (g->flash_toggle & 1));
     int glint = 0;
     if (e == DIAMOND && !covered) {
         int t = (g->frame + (int)(hash((unsigned)x, (unsigned)y, 7) % 97)) % 97;
@@ -235,6 +250,8 @@ static void put_cell(const Game *g, uint32_t *fb, int fw, int top, int bottom, i
                 if (gem && of_gem) c = mixc(grey(c), c, sat);
                 else if (gem && c) c = mixc(grey(c), at_brightness(gem_tone[gem - 15], lum(c)), sat);
                 else if (!rgb) c = grey(c);
+                if (dim) c = mixc(0, c, 0.4);
+                if (boxed) c = scaled(c, pulse);
                 uint32_t t = target ? pixel(6, p, r) : CLEAR;
                 if (boxed && !(target_core[r][p] && core_on)) t = CLEAR;
                 if (t != CLEAR) {

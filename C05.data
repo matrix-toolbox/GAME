@@ -1,0 +1,30 @@
+# 2026-10-03
+diamonds         99
+time             500 # 300
+amoeba_time      60
+amoeba_limit     200
+colors           $C4 $46 $4C $04 $00
+
+map
+iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
+i   x      x                          bi
+i b            x    r    g   g   x  r  i
+i x b x  b    r   b   r     x     r  b i
+i        x      x  x   g  x   x    x   i
+i    rb           r x    r       b   x i
+i  x          x    g   b               i
+i    g   * b    g   x x x     g r    x E
+i       g   b         b    r           i
+i g  x         r g        b    b x     i
+i  r      x x      x   x         g  b  i
+i      r      b               r        i
+i g   x   g     b  g    r x       b    i
+i            b                  x      i
+ig  x   g      x   x      r b b     g  i
+i      b  x       g   r        b  x  g i
+i x  r     bb              x       g   i
+i       b      g  b    x       g       i
+i  b    x    x  x   r   b        x     i
+i  r   g   x    x     r  b  x  g    g  i
+i   x     g  g  x  b          x     g  i
+iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii

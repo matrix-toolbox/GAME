@@ -5,6 +5,10 @@
 #include <time.h>
 #include "game.h"
 
+#ifndef SHEET
+#define SHEET "sprites_1.bmp"
+#endif
+
 static Game game;
 static uint32_t fb[SCREEN_W * SCREEN_H];
 static int held[4], order[4], order_n, fire_key, back_key, back_frames, quit_req, headless;
@@ -167,6 +171,10 @@ int main(int argc, char **argv)
     static char dir[1024];
     snprintf(dir, sizeof dir, "%s", argv[0]);
     char *slash = strrchr(dir, '/');
+#ifdef _WIN32
+    char *bs = strrchr(dir, '\\');
+    if (bs && (!slash || bs > slash)) slash = bs;
+#endif
     if (slash) *slash = 0;
     else snprintf(dir, sizeof dir, ".");
     cave_dir = dir;
@@ -189,7 +197,7 @@ int main(int argc, char **argv)
         else { usage(); return strcmp(a, "--help") ? 1 : 0; }
     }
     char sprites[1100];
-    snprintf(sprites, sizeof sprites, "%s/sprites.bmp", dir);
+    snprintf(sprites, sizeof sprites, "%s/%s", dir, SHEET);
     if (!sprites_load(sprites)) { fprintf(stderr, "%s: can not be read (the pictures, 200 x 100)\n", sprites); return 1; }
     if (export) {
         Cave c;

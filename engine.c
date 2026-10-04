@@ -143,7 +143,7 @@ static void explode_into(Game *g, int x, int y, int diamonds)
         for (int i = x - 1; i <= x + 1; i++) {
             if (i < 0 || j < 0 || i >= CW || j >= CH) continue;
             int e = g->el[j][i];
-            if (e == STEEL || e == EXIT || e == INBOX) continue;
+            if (e == STEEL || e == INBOX) continue;
             if (e == ROCKFORD) kill_rockford(g);
             g->el[j][i] = EXPLOSION;
             g->aux[j][i] = (uint8_t)((i == x && j == y ? 8 : 0) |
@@ -228,7 +228,7 @@ static void rockford(Game *g, int x, int y, int dir, int fire)
         if (e == DIRT) { g->el[ny][nx] = SPACE; sound_play(SND_DIRT); }
         else if (e == DIAMOND) { g->el[ny][nx] = SPACE; collect(g); }
         else if (e == EXIT && g->exit_open) enter_exit(g, x, y, nx, ny, 1);
-        else if (e == BOULDER) push(g, nx, ny, dir);
+        else if (e == BOULDER || e == EXIT) push(g, nx, ny, dir);
         else if (IS_STONE(e) && !g->aux[ny][nx]) {
             g->aux[ny][nx] = (uint8_t)(1 + dir);
             g->done[ny][nx] = 1;
@@ -243,7 +243,10 @@ static void rockford(Game *g, int x, int y, int dir, int fire)
     case BOULDER: case STONE_R: case STONE_G: case STONE_B:
         if (push(g, nx, ny, dir)) move_rockford(g, x, y, nx, ny);
         break;
-    case EXIT: if (g->exit_open) enter_exit(g, x, y, nx, ny, 0); break;
+    case EXIT:
+        if (g->exit_open) enter_exit(g, x, y, nx, ny, 0);
+        else if (push(g, nx, ny, dir)) move_rockford(g, x, y, nx, ny);
+        break;
     }
 }
 
