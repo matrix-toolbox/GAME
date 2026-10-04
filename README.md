@@ -61,13 +61,13 @@ If a cave file contains an error, a warning shows what is wrong and where.
 
 | Key | |
 |---|---|
-| arrows, Control | move, fire |
-| Z | go back in time while held: one tick first, then faster and faster, as far back as Rockford's birth. Playing on from there replaces the old future, but chance does not go back, so the amoeba grows differently. Works only while Rockford is in the cave (not after a death or the exit) |
-| Space | pause (all sound stops) |
-| Esc | give up the cave (costs a life), or quit (in the menu and after GAME OVER) |
+| arrows, control | move, fire |
+| z | go back in time while held: one tick first, then faster and faster, as far back as Rockford's birth. Playing on from there replaces the old future, but chance does not go back, so the amoeba grows differently. Works only while Rockford is in the cave (not after a death or the exit) |
+| space | pause (all sound stops) |
+| escape | give up the cave (costs a life), or quit (in the menu and after GAME OVER) |
 | F2 | a new game: the menu at C01 |
 | F3 | a new game: the menu at a random cave |
-| M | sound on/off |
+| m | sound on/off |
 | F11 | full screen |
 
 ---
