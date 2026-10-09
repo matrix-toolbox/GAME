@@ -254,6 +254,10 @@ static void put_cell(const Game *g, uint32_t *fb, int fw, int top, int bottom, i
                 if (boxed) c = scaled(c, pulse);
                 uint32_t t = target ? pixel(6, p, r) : CLEAR;
                 if (boxed && !(target_core[r][p] && core_on)) t = CLEAR;
+                if (target && e == WALL) {
+                    c = mixc(t == CLEAR ? 0 : grey(t), c, 0.75);
+                    t = CLEAR;
+                }
                 if (t != CLEAR) {
                     t = grey(t);
                     c = IS_STONE(e) && c ? ((c & 0xFEFEFE) >> 1) + ((t & 0xFEFEFE) >> 1) : t;
